@@ -21,7 +21,7 @@ FeynmanBot uses the Feynman Technique. You teach a concept to an AI acting as a 
 - **AI Provider**: Gemini / OpenAI
 
 ## Setup Instructions
-See `run-instructions.md` for local setup.
+See `run-instructions.md` for local setup. You can run the application entirely in **Mock Mode** without any Gemini or Supabase API keys to test the MVP flow.
 
 ## Folder Structure
 ```

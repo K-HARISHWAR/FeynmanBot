@@ -1,8 +1,58 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
+import { api } from '../config/api';
+import { Loader } from '../components/common/Loader';
+
+interface HistorySession {
+  session_id: string;
+  report_id: string;
+  subject: string;
+  topic: string;
+  score: number;
+  created_at: string;
+}
+
+interface HistoryResponse {
+  sessions: HistorySession[];
+}
 
 export const HistoryPage: React.FC = () => {
+  const [history, setHistory] = useState<HistorySession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.get<HistoryResponse>('/history/demo-user')
+      .then(res => {
+        setHistory(res.data.sessions);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setError('History data is unavailable.');
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div className="py-20 flex justify-center"><Loader size="lg" text="Loading history..." /></div>;
+  }
+
+  if (error) {
+    return <div className="py-20 text-center text-rose-500">{error}</div>;
+  }
+
+  if (history.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-8 text-center py-20">
+        <h1 className="text-3xl font-bold text-slate-900">Session History</h1>
+        <p className="text-slate-500 mt-2">No learning history yet. Complete a TeachBack session to see it here.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="mb-8">
@@ -11,18 +61,14 @@ export const HistoryPage: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {[
-          { subject: 'Physics', topic: "Newton's Third Law", score: 85, date: '2026-07-05', id: 'mock-1' },
-          { subject: 'Biology', topic: 'Photosynthesis', score: 92, date: '2026-07-04', id: 'mock-2' },
-          { subject: 'Economics', topic: 'Supply and Demand', score: 76, date: '2026-07-03', id: 'mock-3' },
-        ].map((session, i) => (
+        {history.map((session, i) => (
           <Card key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 gap-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
                   {session.subject}
                 </span>
-                <span className="text-sm text-slate-400">{session.date}</span>
+                <span className="text-sm text-slate-400">{new Date(session.created_at).toLocaleDateString()}</span>
               </div>
               <h3 className="text-lg font-bold text-slate-900">{session.topic}</h3>
             </div>
@@ -34,9 +80,11 @@ export const HistoryPage: React.FC = () => {
                   {session.score}%
                 </p>
               </div>
-              <Button variant="outline" size="sm">
-                View Report
-              </Button>
+              <Link to={`/report/${session.report_id}`}>
+                <Button variant="outline" size="sm">
+                  View Report
+                </Button>
+              </Link>
             </div>
           </Card>
         ))}

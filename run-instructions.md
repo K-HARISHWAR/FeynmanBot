@@ -38,3 +38,16 @@ npm run dev
 ```
 
 Visit `http://localhost:5173` to test FeynmanBot!
+
+## Running in Mock Mode
+Gemini and Supabase keys are not required in mock mode. You can test the full TeachBack flow purely locally.
+
+1. In `backend/.env`, set:
+   ```
+   AI_PROVIDER=mock
+   USE_MOCK_DB=true
+   ```
+2. You can leave the API key and Supabase URL values empty.
+3. Start the backend (`uvicorn app.main:app --reload`).
+4. Start the frontend (`npm run dev`).
+5. Test the TeachBack flow. It will use predefined AI mock questions and evaluation.

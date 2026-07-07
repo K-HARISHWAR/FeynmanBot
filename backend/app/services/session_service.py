@@ -152,4 +152,95 @@ class SessionService:
             
         return evaluation_result
 
+    async def get_dashboard_stats(self, user_id: str):
+        # We assume USE_MOCK_DB for now, or gracefully handle missing supabase
+        sessions = list(_mock_db["sessions"].values())
+        reports = list(_mock_db["reports"].values())
+        
+        if not sessions:
+            return {
+                "total_sessions": 0,
+                "average_score": 0,
+                "best_subject": "N/A",
+                "weakest_subject": "N/A",
+                "recent_sessions": []
+            }
+            
+        total_sessions = len(sessions)
+        
+        if not reports:
+            return {
+                "total_sessions": total_sessions,
+                "average_score": 0,
+                "best_subject": "N/A",
+                "weakest_subject": "N/A",
+                "recent_sessions": []
+            }
+            
+        scores = [r["overall_score"] for r in reports]
+        avg_score = sum(scores) // len(scores)
+        
+        subject_scores = {}
+        for r in reports:
+            s_id = r.get("session_id")
+            s = _mock_db["sessions"].get(s_id)
+            if s:
+                sub = s["subject"]
+                if sub not in subject_scores:
+                    subject_scores[sub] = []
+                subject_scores[sub].append(r["overall_score"])
+                
+        best_subject = "N/A"
+        weakest_subject = "N/A"
+        if subject_scores:
+            avg_sub_scores = {sub: sum(sc)/len(sc) for sub, sc in subject_scores.items()}
+            best_subject = max(avg_sub_scores, key=avg_sub_scores.get)
+            weakest_subject = min(avg_sub_scores, key=avg_sub_scores.get)
+            
+        recent_sessions = []
+        for r in reports[-5:]:
+            s_id = r.get("session_id")
+            s = _mock_db["sessions"].get(s_id)
+            if s:
+                recent_sessions.append({
+                    "session_id": s_id,
+                    "subject": s["subject"],
+                    "topic": s["topic"],
+                    "score": r["overall_score"],
+                    "created_at": "2026-07-07T20:30:00"
+                })
+                
+        recent_sessions.reverse()
+        
+        return {
+            "total_sessions": total_sessions,
+            "average_score": avg_score,
+            "best_subject": best_subject,
+            "weakest_subject": weakest_subject,
+            "recent_sessions": recent_sessions
+        }
+
+    async def get_history(self, user_id: str):
+        sessions_list = []
+        reports = list(_mock_db["reports"].values())
+        
+        for r in reports:
+            s_id = r.get("session_id")
+            s = _mock_db["sessions"].get(s_id)
+            if s:
+                sessions_list.append({
+                    "session_id": s_id,
+                    "report_id": r["id"],
+                    "subject": s["subject"],
+                    "topic": s["topic"],
+                    "score": r["overall_score"],
+                    "created_at": "2026-07-07T20:30:00"
+                })
+                
+        sessions_list.reverse()
+        
+        return {
+            "sessions": sessions_list
+        }
+
 session_service = SessionService()

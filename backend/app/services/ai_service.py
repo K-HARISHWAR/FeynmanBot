@@ -23,11 +23,18 @@ class AIService:
     async def generate_question(self, prompt: str) -> str:
         if self.provider == "mock":
             import random
-            questions = [
-                "If action and reaction are equal, why do they not cancel each other out?",
-                "Can you explain which two objects the forces act on?",
-                "How does this idea apply when a rocket launches?"
-            ]
+            if "Newton" in prompt or "law" in prompt.lower() or "force" in prompt.lower():
+                questions = [
+                    "If action and reaction forces are equal, why do they not cancel each other out?",
+                    "Can you explain which two objects the forces act on while walking?",
+                    "How does Newton's Third Law help explain rocket motion?"
+                ]
+            else:
+                questions = [
+                    "Can you explain that in even simpler words?",
+                    "What is one real-life example of this idea?",
+                    "What is one common mistake people make about this topic?"
+                ]
             return random.choice(questions)
             
         if self.provider == "gemini":
@@ -43,11 +50,31 @@ class AIService:
 
     async def evaluate_session(self, prompt: str) -> dict:
         if self.provider == "mock":
+            import uuid
             return {
-                "overall_score": 85,
-                "misconceptions": ["Assumed forces act on the same object instead of different objects."],
-                "missing_concepts": ["Didn't mention how mass affects acceleration despite equal forces."],
-                "improved_explanation": "Newton's Third Law states that for every action force, there is an equal and opposite reaction force. Importantly, these forces act on two different objects. For example, when you push a wall, the wall pushes back on you with the exact same amount of force. They don't cancel out because they are acting on different bodies."
+              "report_id": str(uuid.uuid4()),
+              "session_id": str(uuid.uuid4()),
+              "overall_score": 84,
+              "accuracy_score": 86,
+              "clarity_score": 82,
+              "completeness_score": 80,
+              "strengths": [
+                "You explained the core idea clearly.",
+                "You used a relevant real-life example."
+              ],
+              "weaknesses": [
+                "You need to explain why equal and opposite forces do not cancel."
+              ],
+              "misconceptions": [
+                "Action and reaction forces act on different objects, not the same object."
+              ],
+              "missing_concepts": [
+                "Force pairs",
+                "Different objects",
+                "Interaction forces"
+              ],
+              "improved_explanation": "Newton's Third Law means that when one object applies a force on another object, the second object applies an equal and opposite force back on the first object. These forces do not cancel because they act on different objects.",
+              "practice_question": "Explain how a rocket moves upward using Newton's Third Law."
             }
 
         if self.provider == "gemini":

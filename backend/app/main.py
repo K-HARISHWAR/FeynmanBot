@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import health_routes, session_routes, report_routes
+from app.api.routes import health_routes, session_routes, report_routes, user_routes
 
 app = FastAPI(title=settings.app_name)
 
@@ -21,3 +21,4 @@ app.add_middleware(
 app.include_router(health_routes.router, prefix="/api", tags=["health"])
 app.include_router(session_routes.router, prefix="/api/sessions", tags=["sessions"])
 app.include_router(report_routes.router, prefix="/api/reports", tags=["reports"])
+app.include_router(user_routes.router, prefix="/api", tags=["users"])

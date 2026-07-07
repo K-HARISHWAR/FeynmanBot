@@ -1,8 +1,58 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from '../components/common/Card';
 import { BookOpen, Target, Clock, Trophy } from 'lucide-react';
+import { api } from '../config/api';
+import { Loader } from '../components/common/Loader';
+
+interface DashboardStats {
+  total_sessions: number;
+  average_score: number;
+  best_subject: string;
+  weakest_subject: string;
+  recent_sessions: {
+    session_id: string;
+    subject: string;
+    topic: string;
+    score: number;
+    created_at: string;
+  }[];
+}
 
 export const DashboardPage: React.FC = () => {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.get<DashboardStats>('/dashboard/demo-user')
+      .then(res => {
+        setStats(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setError('Dashboard data is unavailable. Make sure the backend is running.');
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div className="py-20 flex justify-center"><Loader size="lg" text="Loading dashboard..." /></div>;
+  }
+
+  if (error) {
+    return <div className="py-20 text-center text-rose-500">{error}</div>;
+  }
+
+  if (!stats || stats.total_sessions === 0) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-8 text-center py-20">
+        <h1 className="text-3xl font-bold text-slate-900">Your Dashboard</h1>
+        <p className="text-slate-500 mt-2">No TeachBack sessions yet. Start your first session.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       <div className="mb-8">
@@ -17,7 +67,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div>
             <p className="text-sm text-slate-500 font-medium">Total Sessions</p>
-            <p className="text-2xl font-bold text-slate-900">12</p>
+            <p className="text-2xl font-bold text-slate-900">{stats.total_sessions}</p>
           </div>
         </Card>
         <Card className="flex items-center gap-4">
@@ -26,7 +76,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div>
             <p className="text-sm text-slate-500 font-medium">Avg Score</p>
-            <p className="text-2xl font-bold text-slate-900">84%</p>
+            <p className="text-2xl font-bold text-slate-900">{stats.average_score}%</p>
           </div>
         </Card>
         <Card className="flex items-center gap-4">
@@ -35,7 +85,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div>
             <p className="text-sm text-slate-500 font-medium">Best Subject</p>
-            <p className="text-2xl font-bold text-slate-900">Physics</p>
+            <p className="text-2xl font-bold text-slate-900">{stats.best_subject}</p>
           </div>
         </Card>
         <Card className="flex items-center gap-4">
@@ -43,8 +93,8 @@ export const DashboardPage: React.FC = () => {
             <Clock className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm text-slate-500 font-medium">Study Time</p>
-            <p className="text-2xl font-bold text-slate-900">4.2h</p>
+            <p className="text-sm text-slate-500 font-medium">Weakest Subject</p>
+            <p className="text-2xl font-bold text-slate-900">{stats.weakest_subject}</p>
           </div>
         </Card>
       </div>
@@ -52,36 +102,18 @@ export const DashboardPage: React.FC = () => {
       <h2 className="text-xl font-bold text-slate-900 mt-12 mb-4">Recent Sessions</h2>
       <Card className="overflow-hidden p-0">
         <div className="divide-y divide-slate-100">
-          <div className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-            <div>
-              <p className="font-semibold text-slate-900">Newton's Third Law</p>
-              <p className="text-sm text-slate-500">Physics</p>
+          {stats.recent_sessions.map((session, idx) => (
+            <div key={idx} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+              <div>
+                <p className="font-semibold text-slate-900">{session.topic}</p>
+                <p className="text-sm text-slate-500">{session.subject}</p>
+              </div>
+              <div className="text-right">
+                <p className={`font-bold ${session.score >= 80 ? 'text-emerald-600' : 'text-amber-600'}`}>{session.score}%</p>
+                <p className="text-xs text-slate-400">{new Date(session.created_at).toLocaleDateString()}</p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="font-bold text-emerald-600">85%</p>
-              <p className="text-xs text-slate-400">2 hours ago</p>
-            </div>
-          </div>
-          <div className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-            <div>
-              <p className="font-semibold text-slate-900">Photosynthesis</p>
-              <p className="text-sm text-slate-500">Biology</p>
-            </div>
-            <div className="text-right">
-              <p className="font-bold text-emerald-600">92%</p>
-              <p className="text-xs text-slate-400">Yesterday</p>
-            </div>
-          </div>
-          <div className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-            <div>
-              <p className="font-semibold text-slate-900">Supply and Demand</p>
-              <p className="text-sm text-slate-500">Economics</p>
-            </div>
-            <div className="text-right">
-              <p className="font-bold text-amber-600">76%</p>
-              <p className="text-xs text-slate-400">2 days ago</p>
-            </div>
-          </div>
+          ))}
         </div>
       </Card>
     </div>

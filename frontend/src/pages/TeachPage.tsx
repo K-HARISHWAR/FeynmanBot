@@ -52,9 +52,11 @@ export const TeachPage: React.FC = () => {
     } catch (err: any) {
       console.error(err);
       if (err.message && err.message.includes('Network Error')) {
-        setError("Could not connect to the backend. Check CORS and API URL.");
+        setError("Could not connect to backend. Check CORS and API URL.");
+      } else if (err.response && err.response.status === 500) {
+        setError("AI provider is not configured. Running mock mode is recommended for development.");
       } else {
-        setError("Backend is not reachable. Please start FastAPI on port 8000. Or AI provider is not configured.");
+        setError("Backend is not reachable. Please start FastAPI on port 8000.");
       }
     } finally {
       setLoading(false);
