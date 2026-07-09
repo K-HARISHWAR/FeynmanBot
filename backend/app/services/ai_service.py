@@ -10,8 +10,12 @@ class AIService:
         self.provider = settings.ai_provider
         
         if self.provider == "gemini":
-            genai.configure(api_key=settings.gemini_api_key)
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            if not settings.gemini_api_key:
+                # We will handle the exception at call time or we can just skip init.
+                pass
+            else:
+                genai.configure(api_key=settings.gemini_api_key)
+            self.model_name = settings.gemini_model
         elif self.provider == "openai":
             from openai import OpenAI
             self.openai_client = OpenAI(api_key=settings.openai_api_key)
@@ -38,8 +42,20 @@ class AIService:
             return random.choice(questions)
             
         if self.provider == "gemini":
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
+            if not settings.gemini_api_key:
+                from fastapi import HTTPException
+                raise HTTPException(status_code=400, detail="Gemini API key is missing. Set GEMINI_API_KEY or use AI_PROVIDER=mock.")
+            try:
+                model = genai.GenerativeModel(self.model_name)
+                response = model.generate_content(prompt)
+                return response.text.strip()
+            except Exception as e:
+                from fastapi import HTTPException
+                error_str = str(e)
+                if "NotFound" in error_str or "not found" in error_str.lower():
+                    raise HTTPException(status_code=400, detail=f"Gemini model '{self.model_name}' was not found or is not supported. Try GEMINI_MODEL=gemini-2.5-flash.")
+                raise HTTPException(status_code=502, detail=f"Gemini API error: {error_str}")
+                
         elif self.provider == "openai":
             response = self.openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -78,13 +94,20 @@ class AIService:
             }
 
         if self.provider == "gemini":
-            response = self.model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    response_mime_type="application/json",
-                )
-            )
-            text = response.text
+            prompt = prompt + "\n\nCRITICAL: Return ONLY valid JSON. Do not include markdown formatting like ```json. Your entire response must be parseable by json.loads."
+            if not settings.gemini_api_key:
+                from fastapi import HTTPException
+                raise HTTPException(status_code=400, detail="Gemini API key is missing. Set GEMINI_API_KEY or use AI_PROVIDER=mock.")
+            try:
+                model = genai.GenerativeModel(self.model_name)
+                response = model.generate_content(prompt)
+                text = response.text
+            except Exception as e:
+                from fastapi import HTTPException
+                error_str = str(e)
+                if "NotFound" in error_str or "not found" in error_str.lower():
+                    raise HTTPException(status_code=400, detail=f"Gemini model '{self.model_name}' was not found or is not supported. Try GEMINI_MODEL=gemini-2.5-flash.")
+                raise HTTPException(status_code=502, detail=f"Gemini API error: {error_str}")
         elif self.provider == "openai":
             response = self.openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -99,9 +122,25 @@ class AIService:
             # Sometime models wrap with ```json ... ```
             if text.startswith("```json"):
                 text = text.replace("```json", "", 1).rstrip("`").strip()
+            elif text.startswith("```"):
+                text = text.replace("```", "", 1).rstrip("`").strip()
             return json.loads(text)
-        except json.JSONDecodeError as e:
+        except Exception as e:
             logger.error(f"Failed to parse AI response as JSON: {text}")
-            raise ValueError("AI produced invalid JSON") from e
+            import uuid
+            return {
+              "report_id": str(uuid.uuid4()),
+              "session_id": str(uuid.uuid4()),
+              "overall_score": 0,
+              "accuracy_score": 0,
+              "clarity_score": 0,
+              "completeness_score": 0,
+              "strengths": ["Failed to parse AI response."],
+              "weaknesses": ["Failed to parse AI response."],
+              "misconceptions": [],
+              "missing_concepts": [],
+              "improved_explanation": "Gemini did not return valid JSON. The evaluation failed to parse.",
+              "practice_question": "Try again?"
+            }
 
 ai_service = AIService()
