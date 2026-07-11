@@ -43,7 +43,7 @@ class SessionService:
             
         return session_id
         
-    async def explain(self, session_id: str, subject: str, topic: str, student_explanation: str):
+    async def explain(self, session_id: str, subject: str, topic: str, student_explanation: str, ai_mode: str = None):
         if settings.use_mock_db:
             if session_id in _mock_db["sessions"]:
                 _mock_db["sessions"][session_id]["student_explanation"] = student_explanation
@@ -58,7 +58,7 @@ class SessionService:
                 logger.error(f"Supabase error in explain: {e}")
                 raise HTTPException(status_code=500, detail=f"Database error: {e}")
         
-        prompt = get_ai_student_prompt(subject, topic, student_explanation, "None yet")
+        prompt = get_ai_student_prompt(subject, topic, student_explanation, "None yet", ai_mode or "Friendly Beginner")
         question = await ai_service.generate_question(prompt)
         
         if settings.use_mock_db:
@@ -81,7 +81,7 @@ class SessionService:
             
         return question
 
-    async def answer(self, session_id: str, current_question: str, student_answer: str, question_number: int):
+    async def answer(self, session_id: str, current_question: str, student_answer: str, question_number: int, ai_mode: str = None):
         if settings.use_mock_db:
             for q in _mock_db["questions"]:
                 if q["session_id"] == session_id and q["question_number"] == question_number:
@@ -128,7 +128,7 @@ class SessionService:
                 logger.error(f"Supabase error fetching history in answer: {e}")
                 raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
-        prompt = get_ai_student_prompt(subject, topic, student_exp, history)
+        prompt = get_ai_student_prompt(subject, topic, student_exp, history, ai_mode or "Friendly Beginner")
         next_question = await ai_service.generate_question(prompt)
         
         if settings.use_mock_db:
@@ -151,7 +151,7 @@ class SessionService:
             
         return next_question, False
 
-    async def evaluate(self, session_id: str):
+    async def evaluate(self, session_id: str, ai_mode: str = None, confidence_before: int = None):
         history = ""
         if settings.use_mock_db:
             subject = _mock_db["sessions"].get(session_id, {}).get("subject", "Unknown")
@@ -179,7 +179,7 @@ class SessionService:
                 logger.error(f"Supabase error fetching history in evaluate: {e}")
                 raise HTTPException(status_code=500, detail=f"Database error: {e}")
                     
-        prompt = get_evaluation_prompt(subject, topic, student_exp, history)
+        prompt = get_evaluation_prompt(subject, topic, student_exp, history, ai_mode or "Friendly Beginner")
         evaluation_result = await ai_service.evaluate_session(prompt)
         
         report_id = str(uuid.uuid4())
@@ -191,7 +191,13 @@ class SessionService:
             _mock_db["reports"][report_id] = evaluation_result
         else:
             try:
-                res = supabase.table("reports").insert(evaluation_result).execute()
+                # Copy for db insert to avoid crashing on missing optional columns
+                db_payload = evaluation_result.copy()
+                # Remove optional fields that may not exist in DB yet
+                for field in ["example_quality_score", "revision_cards", "concept_map", "student_explanation", "subject", "topic", "confidence_before", "ai_mode"]:
+                    db_payload.pop(field, None)
+                    
+                res = supabase.table("reports").insert(db_payload).execute()
                 if not res.data:
                     raise Exception("Failed to insert report")
                 
@@ -202,6 +208,15 @@ class SessionService:
             except Exception as e:
                 logger.error(f"Supabase error inserting report: {e}")
                 raise HTTPException(status_code=500, detail=f"Database error: {e}")
+            
+        
+        evaluation_result["student_explanation"] = student_exp
+        evaluation_result["subject"] = subject
+        evaluation_result["topic"] = topic
+        if confidence_before is not None:
+            evaluation_result["confidence_before"] = confidence_before
+        if ai_mode is not None:
+            evaluation_result["ai_mode"] = ai_mode
             
         return evaluation_result
 

@@ -1,5 +1,5 @@
 import { api } from '../../config/api';
-import type { SessionStartRequest, SessionStartResponse, ExplainRequest, ExplainResponse, AnswerRequest, AnswerResponse } from '../../types/session';
+import type { SessionStartRequest, SessionStartResponse, ExplainRequest, ExplainResponse, AnswerRequest, AnswerResponse, EvaluateRequest } from '../../types/session';
 
 export const sessionApi = {
   startSession: async (data: SessionStartRequest): Promise<SessionStartResponse> => {
@@ -17,8 +17,8 @@ export const sessionApi = {
     return response.data;
   },
   
-  evaluateSession: async (sessionId: string): Promise<any> => {
-    const response = await api.post('/sessions/evaluate', { session_id: sessionId });
+  evaluateSession: async (data: EvaluateRequest): Promise<any> => {
+    const response = await api.post('/sessions/evaluate', data);
     return response.data;
   }
 };

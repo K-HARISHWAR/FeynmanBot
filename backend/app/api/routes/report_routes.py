@@ -20,7 +20,17 @@ async def get_report(report_id: str):
             res = supabase.table("reports").select("*").eq("id", report_id).execute()
             if not res.data:
                 raise HTTPException(status_code=404, detail="Report not found")
-            return res.data[0]
+            report = res.data[0]
+            try:
+                session_res = supabase.table("teach_sessions").select("subject, topic, student_explanation").eq("id", report["session_id"]).execute()
+                if session_res.data:
+                    session = session_res.data[0]
+                    report["subject"] = session.get("subject")
+                    report["topic"] = session.get("topic")
+                    report["student_explanation"] = session.get("student_explanation")
+            except Exception as e:
+                logger.error(f"Error fetching session for report: {e}")
+            return report
         except HTTPException:
             raise
         except Exception as e:

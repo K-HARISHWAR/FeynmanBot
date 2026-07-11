@@ -12,14 +12,14 @@ async def start_session(request: SessionStartRequest):
 @router.post("/explain", response_model=ExplainResponse)
 async def explain_topic(request: ExplainRequest):
     question = await session_service.explain(
-        request.session_id, request.subject, request.topic, request.student_explanation
+        request.session_id, request.subject, request.topic, request.student_explanation, request.ai_mode
     )
     return ExplainResponse(question=question, question_number=1)
 
 @router.post("/answer", response_model=AnswerResponse)
 async def answer_question(request: AnswerRequest):
     next_question, is_final = await session_service.answer(
-        request.session_id, request.question, request.student_answer, request.question_number
+        request.session_id, request.question, request.student_answer, request.question_number, request.ai_mode
     )
     
     if is_final:
@@ -38,6 +38,6 @@ async def answer_question(request: AnswerRequest):
 
 @router.post("/evaluate")
 async def evaluate_session(request: EvaluateRequest):
-    result = await session_service.evaluate(request.session_id)
+    result = await session_service.evaluate(request.session_id, request.ai_mode, request.confidence_before)
     # the frontend schema matches the dict result, so we return it directly, FastAPI handles Pydantic conversion
     return result

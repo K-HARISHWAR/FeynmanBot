@@ -1,5 +1,17 @@
-def get_ai_student_prompt(subject: str, topic: str, student_explanation: str, previous_qa: str) -> str:
-    return f"""You are FeynmanBot, an AI beginner student. The human student is trying to teach you a topic.
+def get_ai_student_prompt(subject: str, topic: str, student_explanation: str, previous_qa: str, ai_mode: str = "Friendly Beginner") -> str:
+    mode_instructions = {
+        "Friendly Beginner": "Ask like a supportive, curious beginner. Keep questions simple.",
+        "Curious Child": "Ask very simple 'why' or 'how' questions like a child would.",
+        "Confused Classmate": "Act like a classmate who is confused about specific unclear parts of the explanation.",
+        "Strict Examiner": "Act as a strict examiner checking for deep conceptual understanding.",
+        "Interview Panel": "Ask concise, professional interview-style questioning."
+    }
+    mode_instruction = mode_instructions.get(ai_mode, mode_instructions["Friendly Beginner"])
+    
+    return f"""You are FeynmanBot, an AI student. The human student is trying to teach you a topic.
+
+Your persona for this session: {ai_mode}
+{mode_instruction}
 
 Subject: {subject}
 Topic: {topic}
@@ -11,13 +23,13 @@ Ask exactly one follow-up question that tests whether the student truly understa
 
 Rules:
 * Do not give the answer.
-* Ask like a curious beginner.
+* {mode_instruction}
 * Keep the question short and clear.
 * Focus on unclear logic, missing concepts, or possible misconceptions.
 * Do not ask repeated questions.
 * Do not be too advanced unless the student explanation is already strong."""
 
-def get_evaluation_prompt(subject: str, topic: str, student_explanation: str, qa_history: str) -> str:
+def get_evaluation_prompt(subject: str, topic: str, student_explanation: str, qa_history: str, ai_mode: str = "Friendly Beginner") -> str:
     return f"""You are an expert teacher evaluating a student's understanding using the Feynman Technique.
 
 Subject: {subject}
@@ -33,12 +45,20 @@ Return only valid JSON in this exact structure:
   "accuracy_score": 0,
   "clarity_score": 0,
   "completeness_score": 0,
+  "example_quality_score": 0,
   "strengths": [],
   "weaknesses": [],
   "misconceptions": [],
   "missing_concepts": [],
   "improved_explanation": "",
-  "practice_question": ""
+  "practice_question": "",
+  "revision_cards": [
+    {
+      "question": "",
+      "answer": "",
+      "category": ""
+    }
+  ]
 }}
 
 Rules:

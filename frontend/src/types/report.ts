@@ -11,4 +11,12 @@ export interface ReportResponse {
   missing_concepts: string[];
   improved_explanation: string;
   practice_question: string;
+  example_quality_score?: number;
+  revision_cards?: { question: string; answer: string; category?: string }[];
+  concept_map?: any;
+  student_explanation?: string;
+  subject?: string;
+  topic?: string;
+  confidence_before?: number;
+  ai_mode?: string;
 }

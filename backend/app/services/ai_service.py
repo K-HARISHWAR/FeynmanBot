@@ -90,7 +90,20 @@ class AIService:
                 "Interaction forces"
               ],
               "improved_explanation": "Newton's Third Law means that when one object applies a force on another object, the second object applies an equal and opposite force back on the first object. These forces do not cancel because they act on different objects.",
-              "practice_question": "Explain how a rocket moves upward using Newton's Third Law."
+              "practice_question": "Explain how a rocket moves upward using Newton's Third Law.",
+              "example_quality_score": 85,
+              "revision_cards": [
+                {
+                  "question": "Why do action and reaction forces not cancel?",
+                  "answer": "Because they act on different objects.",
+                  "category": "Misconception"
+                },
+                {
+                  "question": "What is Newton's Third Law?",
+                  "answer": "Every action has an equal and opposite reaction on different objects.",
+                  "category": "Core Concept"
+                }
+              ]
             }
 
         if self.provider == "gemini":

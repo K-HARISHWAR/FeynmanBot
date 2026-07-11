@@ -5,6 +5,8 @@ class SessionStartRequest(BaseModel):
     user_id: str = "demo-user"
     subject: str
     topic: str
+    ai_mode: Optional[str] = None
+    confidence_before: Optional[int] = None
 
 class SessionStartResponse(BaseModel):
     session_id: str
@@ -15,6 +17,7 @@ class ExplainRequest(BaseModel):
     subject: str
     topic: str
     student_explanation: str
+    ai_mode: Optional[str] = None
 
 class ExplainResponse(BaseModel):
     question: str
@@ -25,6 +28,7 @@ class AnswerRequest(BaseModel):
     question: str
     student_answer: str
     question_number: int
+    ai_mode: Optional[str] = None
 
 class AnswerResponse(BaseModel):
     next_question: Optional[str]
@@ -34,3 +38,5 @@ class AnswerResponse(BaseModel):
 
 class EvaluateRequest(BaseModel):
     session_id: str
+    ai_mode: Optional[str] = None
+    confidence_before: Optional[int] = None

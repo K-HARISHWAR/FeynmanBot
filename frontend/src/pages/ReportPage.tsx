@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card } from '../components/common/Card';
-import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Loader } from '../components/common/Loader';
 import { reportApi } from '../features/reports/reportApi';
 import type { ReportResponse } from '../types/report';
-import { CheckCircle, AlertTriangle, Lightbulb, Target, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import { ScoreBreakdown } from '../components/report/ScoreBreakdown';
+import { MisconceptionRadar } from '../components/report/MisconceptionRadar';
+import { ExplanationComparison } from '../components/report/ExplanationComparison';
+import { KnowledgeGapMap } from '../components/report/KnowledgeGapMap';
+import { RevisionCards } from '../components/report/RevisionCards';
+import { ConfidenceInsight } from '../components/report/ConfidenceInsight';
 
 export const ReportPage: React.FC = () => {
   const { reportId } = useParams<{ reportId: string }>();
   const [report, setReport] = useState<ReportResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (reportId) {
@@ -47,7 +51,15 @@ export const ReportPage: React.FC = () => {
               "Interaction forces"
             ],
             improved_explanation: "Newton's Third Law means that when one object applies a force on another object, the second object applies an equal and opposite force back on the first object. These forces do not cancel because they act on different objects.",
-            practice_question: "Explain how a rocket moves upward using Newton's Third Law."
+            practice_question: "Explain how a rocket moves upward using Newton's Third Law.",
+            example_quality_score: 85,
+            subject: "Physics",
+            topic: "Newton's Third Law",
+            student_explanation: "When you push something it pushes back with the same force. That is why if I push a wall, the wall pushes me.",
+            confidence_before: 3,
+            revision_cards: [
+              { question: "Why do action and reaction forces not cancel?", answer: "Because they act on different objects." }
+            ]
           });
           setLoading(false);
         });
@@ -57,14 +69,52 @@ export const ReportPage: React.FC = () => {
   if (loading) return <div className="py-20"><Loader size="lg" text="Loading report..." /></div>;
   if (!report) return <div className="text-center py-20 text-rose-500">Failed to load report.</div>;
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-600';
-    if (score >= 60) return 'text-amber-600';
-    return 'text-rose-600';
+  const deriveExampleQuality = () => {
+    if (report.example_quality_score) return report.example_quality_score;
+    const mentionsExample = report.strengths.some(s => s.toLowerCase().includes('example'));
+    if (mentionsExample) return 85;
+    return Math.floor((report.clarity_score + report.completeness_score) / 2);
+  };
+
+  const deriveMisconceptionRisk = () => {
+    const len = report.misconceptions.length;
+    if (len === 0) return 'Low';
+    if (len === 1) return 'Medium';
+    return 'High';
+  };
+
+  const deriveImprovements = () => {
+    const improvements = [];
+    if (report.missing_concepts.length > 0) {
+      improvements.push(`Added missing concepts: ${report.missing_concepts.join(', ')}`);
+    }
+    if (report.misconceptions.length > 0) {
+      improvements.push("Corrected underlying misconceptions");
+    }
+    improvements.push("Improved clarity and structure");
+    return improvements;
+  };
+
+  const deriveRevisionCards = () => {
+    if (report.revision_cards && report.revision_cards.length > 0) {
+      return report.revision_cards;
+    }
+    return [
+      {
+        question: "What is the key takeaway from this topic?",
+        answer: "Review the improved explanation to see the core concepts clearly articulated.",
+        category: "Summary"
+      },
+      {
+        question: "Practice Question",
+        answer: report.practice_question,
+        category: "Practice"
+      }
+    ];
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">TeachBack Evaluation</h1>
@@ -78,127 +128,67 @@ export const ReportPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="col-span-1 md:col-span-4 bg-gradient-to-br from-slate-900 to-primary-900 text-white border-0">
-          <div className="flex flex-col items-center justify-center py-6">
-            <span className="text-slate-300 font-medium mb-2 text-lg">Overall Score</span>
-            <div className="text-6xl font-black mb-4 flex items-baseline">
-              <span className={getScoreColor(report.overall_score)}>{report.overall_score}</span>
-              <span className="text-3xl text-slate-400 font-bold">/100</span>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="col-span-1 md:col-span-4 space-y-6">
+          <ScoreBreakdown 
+            overall={report.overall_score}
+            accuracy={report.accuracy_score}
+            clarity={report.clarity_score}
+            completeness={report.completeness_score}
+            exampleQuality={deriveExampleQuality()}
+            misconceptionRisk={deriveMisconceptionRisk()}
+          />
+          {report.confidence_before !== undefined && (
+            <ConfidenceInsight 
+              confidenceBefore={report.confidence_before} 
+              overallScore={report.overall_score} 
+            />
+          )}
+        </div>
+        
+        <div className="col-span-1 md:col-span-8 space-y-6">
+          <Card className="p-6">
+            <h3 className="text-xl font-bold text-slate-800 mb-6">Explanation Analysis</h3>
+            <ExplanationComparison 
+              original={report.student_explanation}
+              improved={report.improved_explanation}
+              improvements={deriveImprovements()}
+            />
+          </Card>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-bold text-slate-800 mb-6">Misconception Radar</h3>
+              <MisconceptionRadar 
+                misconceptions={report.misconceptions}
+                weaknesses={report.weaknesses}
+              />
+            </Card>
+            <div className="space-y-6">
+              <KnowledgeGapMap 
+                topic={report.topic || "Current Topic"}
+                understood={report.strengths}
+                partial={report.weaknesses}
+                missing={report.missing_concepts}
+                misconceptions={report.misconceptions}
+              />
             </div>
+          </div>
+          
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <RefreshCw className="text-primary-600" />
+              <h3 className="text-xl font-bold text-slate-800">Revision Cards</h3>
+            </div>
+            <p className="text-sm text-slate-500 mb-6">Review these flashcards to solidify your understanding.</p>
+            <RevisionCards cards={deriveRevisionCards()} />
             
-            <div className="w-full max-w-md grid grid-cols-3 gap-4 text-center mt-4">
-              <div>
-                <div className="text-sm text-slate-400 mb-1">Accuracy</div>
-                <div className="font-semibold text-xl">{report.accuracy_score}%</div>
-              </div>
-              <div>
-                <div className="text-sm text-slate-400 mb-1">Clarity</div>
-                <div className="font-semibold text-xl">{report.clarity_score}%</div>
-              </div>
-              <div>
-                <div className="text-sm text-slate-400 mb-1">Completeness</div>
-                <div className="font-semibold text-xl">{report.completeness_score}%</div>
-              </div>
+            <div className="mt-8 bg-slate-50 p-5 rounded-xl border border-slate-200">
+              <h4 className="text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Practice Question</h4>
+              <p className="text-slate-800 font-medium">{report.practice_question}</p>
             </div>
-          </div>
-        </Card>
-
-        {/* Strengths & Weaknesses */}
-        <Card className="col-span-1 md:col-span-2">
-          <div className="flex items-center gap-2 mb-4">
-            <CheckCircle className="text-emerald-500" />
-            <h3 className="text-lg font-bold text-slate-900">Strengths</h3>
-          </div>
-          <ul className="space-y-3">
-            {report.strengths.map((s, i) => (
-              <li key={i} className="flex gap-2 text-slate-700">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                <span>{s}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card className="col-span-1 md:col-span-2">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="text-amber-500" />
-            <h3 className="text-lg font-bold text-slate-900">Areas for Improvement</h3>
-          </div>
-          <ul className="space-y-3">
-            {report.weaknesses.map((w, i) => (
-              <li key={i} className="flex gap-2 text-slate-700">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                <span>{w}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        {/* Misconceptions & Missing Concepts */}
-        <Card className="col-span-1 md:col-span-4 border-rose-100 bg-rose-50/30">
-          <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Target className="text-rose-500" />
-            Knowledge Gaps
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wider">Misconceptions Detected</h4>
-              {report.misconceptions.length > 0 ? (
-                <div className="space-y-2">
-                  {report.misconceptions.map((m, i) => (
-                    <div key={i} className="bg-white p-3 rounded border border-rose-100 text-slate-700 text-sm shadow-sm">
-                      {m}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-slate-500 text-sm italic">No major misconceptions detected.</p>
-              )}
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-slate-800 mb-3 text-sm uppercase tracking-wider">Missing Concepts</h4>
-              {report.missing_concepts.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {report.missing_concepts.map((mc, i) => (
-                    <Badge key={i} variant="neutral" className="bg-white border border-slate-200 py-1.5 px-3">{mc}</Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-slate-500 text-sm italic">No key concepts were missing.</p>
-              )}
-            </div>
-          </div>
-        </Card>
-
-        {/* Improved Explanation */}
-        <Card className="col-span-1 md:col-span-4 bg-primary-50/50 border-primary-100">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Lightbulb className="text-primary-600" />
-              <h3 className="text-lg font-bold text-slate-900">The Feynman Explanation</h3>
-            </div>
-          </div>
-          <div className="prose prose-slate max-w-none">
-            <p className="text-slate-800 leading-relaxed bg-white p-6 rounded-lg border border-primary-100 shadow-sm">
-              {report.improved_explanation}
-            </p>
-          </div>
-        </Card>
-
-        {/* Practice Question */}
-        <Card className="col-span-1 md:col-span-4">
-          <div className="flex items-center gap-2 mb-4">
-            <RefreshCw className="text-slate-700" />
-            <h3 className="text-lg font-bold text-slate-900">Next Steps: Test Yourself</h3>
-          </div>
-          <p className="text-slate-600 mb-4">Try answering this practice question focusing on your weakest area:</p>
-          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-slate-800 font-medium">
-            {report.practice_question}
-          </div>
-        </Card>
-
+          </Card>
+        </div>
       </div>
     </div>
   );
