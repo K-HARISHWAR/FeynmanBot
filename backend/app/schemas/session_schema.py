@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 class SessionStartRequest(BaseModel):
-    user_id: Optional[str] = None
+    user_id: str = "demo-user"
     subject: str
     topic: str
 

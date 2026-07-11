@@ -19,6 +19,7 @@ _mock_db = {
 class SessionService:
     async def start_session(self, user_id: str, subject: str, topic: str):
         session_id = str(uuid.uuid4())
+        user_id = user_id or "demo-user"
         
         if settings.use_mock_db:
             _mock_db["sessions"][session_id] = {
@@ -29,7 +30,7 @@ class SessionService:
         try:
             res = supabase.table("teach_sessions").insert({
                 "id": session_id,
-                "user_id": user_id if user_id else None,
+                "user_id": user_id,
                 "subject": subject,
                 "topic": topic,
                 "status": "started"
@@ -184,7 +185,7 @@ class SessionService:
         report_id = str(uuid.uuid4())
         evaluation_result["id"] = report_id
         evaluation_result["session_id"] = session_id
-        evaluation_result["user_id"] = user_id
+        evaluation_result["user_id"] = user_id or "demo-user"
         
         if settings.use_mock_db:
             _mock_db["reports"][report_id] = evaluation_result

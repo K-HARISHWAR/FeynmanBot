@@ -36,7 +36,7 @@ export const TeachPage: React.FC = () => {
     
     setLoading(true);
     try {
-      const startRes = await sessionApi.startSession({ subject, topic });
+      const startRes = await sessionApi.startSession({ user_id: "demo-user", subject, topic });
       setSessionId(startRes.session_id);
       
       const explainRes = await sessionApi.explainTopic({
@@ -51,10 +51,14 @@ export const TeachPage: React.FC = () => {
       setStep('qa');
     } catch (err: any) {
       console.error(err);
-      if (err.message && err.message.includes('Network Error')) {
-        setError("Could not connect to backend. Check CORS and API URL.");
-      } else if (err.response && err.response.status === 500) {
-        setError("AI provider is not configured. Running mock mode is recommended for development.");
+      if (err.response) {
+        if (err.response.status === 500) {
+          setError("Database error. Check backend terminal or Supabase table constraints.");
+        } else if (err.response.status === 400) {
+          setError(err.response.data?.detail || "Bad Request");
+        } else {
+          setError("An unexpected error occurred.");
+        }
       } else {
         setError("Backend is not reachable. Please start FastAPI on port 8000.");
       }
