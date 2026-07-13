@@ -130,8 +130,9 @@ export const ReportPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        <div className="col-span-1 md:col-span-4 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Analytics & Metrics */}
+        <div className="col-span-1 lg:col-span-4 space-y-6">
           <ScoreBreakdown 
             overall={report.overall_score}
             accuracy={report.accuracy_score}
@@ -146,9 +147,26 @@ export const ReportPage: React.FC = () => {
               overallScore={report.overall_score} 
             />
           )}
+          
+          <Card className="p-6">
+            <h3 className="text-xl font-bold text-slate-800 mb-6">Misconception Radar</h3>
+            <MisconceptionRadar 
+              misconceptions={report.misconceptions}
+              weaknesses={report.weaknesses}
+            />
+          </Card>
+          
+          <KnowledgeGapMap 
+            topic={report.topic || "Current Topic"}
+            understood={report.strengths}
+            partial={report.weaknesses}
+            missing={report.missing_concepts}
+            misconceptions={report.misconceptions}
+          />
         </div>
         
-        <div className="col-span-1 md:col-span-8 space-y-6">
+        {/* Right Column: Detailed Feedback & Study Material */}
+        <div className="col-span-1 lg:col-span-8 space-y-6">
           <Card className="p-6">
             <h3 className="text-xl font-bold text-slate-800 mb-6">Explanation Analysis</h3>
             <ExplanationComparison 
@@ -157,25 +175,6 @@ export const ReportPage: React.FC = () => {
               improvements={deriveImprovements()}
             />
           </Card>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-slate-800 mb-6">Misconception Radar</h3>
-              <MisconceptionRadar 
-                misconceptions={report.misconceptions}
-                weaknesses={report.weaknesses}
-              />
-            </Card>
-            <div className="space-y-6">
-              <KnowledgeGapMap 
-                topic={report.topic || "Current Topic"}
-                understood={report.strengths}
-                partial={report.weaknesses}
-                missing={report.missing_concepts}
-                misconceptions={report.misconceptions}
-              />
-            </div>
-          </div>
           
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-6">

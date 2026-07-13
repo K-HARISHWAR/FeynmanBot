@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
+import { AutocompleteInput } from '../components/common/AutocompleteInput';
 import { TextArea } from '../components/common/TextArea';
 import { Loader } from '../components/common/Loader';
 import { sessionApi } from '../features/sessions/sessionApi';
@@ -13,6 +14,16 @@ import { LearningTimeline } from '../components/teach/LearningTimeline';
 import { TeachModeStatus } from '../components/teach/TeachModeStatus';
 import type { BotStatus } from '../components/teach/TeachModeStatus';
 import { AnimatedPageShell } from '../components/layout/AnimatedPageShell';
+
+const POPULAR_SUBJECTS = ['Physics', 'Computer Science', 'Mathematics', 'Biology', 'History'];
+
+const TOPIC_SUGGESTIONS: Record<string, string[]> = {
+  'Physics': ["Newton's Laws", 'Kinematics', 'Thermodynamics', 'Electromagnetism'],
+  'Computer Science': ['Data Structures', 'Algorithms', 'Machine Learning', 'Databases'],
+  'Mathematics': ['Calculus', 'Linear Algebra', 'Probability', 'Geometry'],
+  'Biology': ['Genetics', 'Cell Biology', 'Evolution', 'Human Anatomy'],
+  'History': ['World War II', 'Ancient Rome', 'Industrial Revolution'],
+};
 
 export const TeachPage: React.FC = () => {
   const navigate = useNavigate();
@@ -130,103 +141,81 @@ export const TeachPage: React.FC = () => {
     }
   };
 
-  if (step === 'evaluating') {
-    return (
-      <AnimatedPageShell variant="teach">
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
-        <LearningTimeline currentStep={getTimelineStep()} />
-        <TeachModeStatus status={botStatus} />
-        <Loader size="lg" text="Generating your personalized report..." />
-      </div>
-      </AnimatedPageShell>
-    );
-  }
+  // evaluating step is now handled within the main layout grid
 
   return (
     <AnimatedPageShell variant="teach">
-      <div className="max-w-4xl mx-auto pb-12">
-      <div className="mb-8 mt-4">
-        <LearningTimeline currentStep={getTimelineStep()} />
-      </div>
-      
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Teach FeynmanBot</h1>
-        <p className="text-slate-500 mt-3 text-lg">Explain the concept as simply as you can. True understanding is shown by simplicity.</p>
-      </div>
-
-      {error && (
-        <div className="mb-6 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg">
-          {error}
+      <div className="max-w-7xl mx-auto pb-12 px-4 xl:px-8">
+        <div className="mb-8 text-center mt-4">
+          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Teach FeynmanBot</h1>
+          <p className="text-slate-500 mt-3 text-lg">Explain the concept as simply as you can. True understanding is shown by simplicity.</p>
         </div>
-      )}
+
+        {error && (
+          <div className="mb-6 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg max-w-3xl mx-auto">
+            {error}
+          </div>
+        )}
+
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* Main Content Area */}
+          <div className="flex-grow w-full max-w-5xl">
       
       {step === 'init' && (
-        <>
-          <AIStudentModeSelector selectedMode={aiMode} onSelectMode={setAiMode} disabled={loading} />
-          
-          <Card className="shadow-lg border-primary-100 overflow-hidden">
-            <div className="bg-primary-50 p-6 border-b border-primary-100 mb-6">
-              <TeachModeStatus status={botStatus} />
-            </div>
-            
-            <form onSubmit={handleStart} className="space-y-6 px-6 pb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input 
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Panel: Settings */}
+          <div className="lg:col-span-5">
+            <Card className="shadow-lg border-primary-100 p-6 h-full flex flex-col">
+              <AIStudentModeSelector selectedMode={aiMode} onSelectMode={setAiMode} disabled={loading} />
+              
+              <div className="space-y-6 pt-2">
+                <AutocompleteInput 
                   label="Subject (e.g. Physics)" 
                   value={subject} 
-                  onChange={e => setSubject(e.target.value)} 
-                  placeholder="Physics" 
+                  onChange={setSubject} 
+                  placeholder="Start typing a subject..." 
                   required 
                 />
-                <Input 
+                <AutocompleteInput 
                   label="Topic (e.g. Newton's Third Law)" 
                   value={topic} 
-                  onChange={e => setTopic(e.target.value)} 
-                  placeholder="Newton's Third Law" 
+                  onChange={setTopic} 
+                  placeholder="Start typing a topic..." 
                   required 
                 />
               </div>
+            </Card>
+          </div>
+          
+          {/* Right Panel: Teaching Interface */}
+          <div className="lg:col-span-7">
+            <Card className="shadow-lg border-primary-100 overflow-hidden h-full flex flex-col">
+              <div className="bg-primary-50 p-6 border-b border-primary-100">
+                <TeachModeStatus status={botStatus} />
+              </div>
               
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  How confident are you in this topic before starting? (1-5)
-                </label>
-                <div className="flex space-x-2">
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setConfidenceBefore(num)}
-                      className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                        confidenceBefore === num 
-                          ? 'bg-primary-600 text-white shadow-md' 
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
+              <form onSubmit={handleStart} className="flex flex-col flex-grow p-6 space-y-4">
+                <div className="flex-grow flex flex-col">
+                  <TextArea 
+                    label="Your Explanation" 
+                    value={explanation} 
+                    onChange={e => setExplanation(e.target.value)} 
+                    placeholder="Explain the topic as if I am a complete beginner..."
+                    className="flex-grow min-h-[300px]"
+                    required 
+                  />
                 </div>
-              </div>
-            
-              <TextArea 
-                label="Your Explanation" 
-                value={explanation} 
-                onChange={e => setExplanation(e.target.value)} 
-                placeholder="Explain the topic as if I am a complete beginner..."
-                className="min-h-[200px]"
-                required 
-              />
-              <ExplainSimplerButton />
-              
-              <div className="flex justify-end pt-4">
-                <Button type="submit" size="lg" isLoading={loading} className="w-full sm:w-auto">
-                  Teach FeynmanBot <Send className="ml-2 w-4 h-4" />
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </>
+                
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
+                  <ExplainSimplerButton />
+                  <Button type="submit" size="lg" isLoading={loading} className="w-full sm:w-auto">
+                    Teach FeynmanBot <Send className="ml-2 w-4 h-4" />
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          </div>
+        </div>
       )}
       
       {step === 'qa' && (
@@ -265,7 +254,31 @@ export const TeachPage: React.FC = () => {
           </Card>
         </div>
       )}
-    </div>
+
+      {step === 'evaluating' && (
+        <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-8 bg-white/50 backdrop-blur-sm p-12 rounded-2xl border border-slate-100 shadow-sm">
+          <TeachModeStatus status={botStatus} />
+          <Loader size="lg" text="Generating your personalized report..." />
+        </div>
+      )}
+      </div>
+
+      {/* Timeline Sidebar (Right) */}
+      <div className="hidden lg:block w-56 flex-shrink-0 relative">
+        <div className="sticky top-24 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-primary-100">
+          <h3 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wider text-center">Progress</h3>
+          <LearningTimeline currentStep={getTimelineStep()} />
+        </div>
+      </div>
+      
+      {/* Mobile Timeline */}
+      <div className="lg:hidden w-full overflow-hidden mt-8 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-primary-100">
+        <h3 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wider text-center">Progress</h3>
+        <LearningTimeline currentStep={getTimelineStep()} />
+      </div>
+
+        </div>
+      </div>
     </AnimatedPageShell>
   );
 };

@@ -19,7 +19,7 @@ export const AIStudentModeSelector: React.FC<AIStudentModeSelectorProps> = ({ se
   return (
     <div className="mb-6">
       <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Select AI Student Persona</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3">
         {MODES.map((mode) => (
           <button
             key={mode.id}
