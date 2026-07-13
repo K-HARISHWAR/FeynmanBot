@@ -18,8 +18,13 @@ export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({
   exampleQuality,
   misconceptionRisk
 }) => {
+  let glowClass = 'shadow-[0_0_20px_rgba(244,63,94,0.15)]'; // rose
+  if (overall >= 85) glowClass = 'shadow-[0_0_20px_rgba(16,185,129,0.2)]'; // emerald
+  else if (overall >= 70) glowClass = 'shadow-[0_0_20px_rgba(14,165,233,0.2)]'; // blue
+  else if (overall >= 50) glowClass = 'shadow-[0_0_20px_rgba(245,158,11,0.2)]'; // amber
+
   return (
-    <div className="glass-card p-6">
+    <div className={`glass-card p-6 transition-shadow duration-500 ${glowClass}`}>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-slate-800">Score Breakdown</h3>

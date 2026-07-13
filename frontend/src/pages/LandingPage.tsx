@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatedPageShell } from '../components/layout/AnimatedPageShell';
 import { Button } from '../components/common/Button';
 import { Brain, MessageSquare, Target, Zap } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   return (
-    <div className="flex flex-col items-center">
+    <AnimatedPageShell variant="landing" className="flex flex-col items-center">
       {/* Hero Section */}
       <section className="w-full py-20 text-center">
         <div className="inline-flex items-center justify-center p-3 bg-primary-100 rounded-full mb-6">
@@ -68,6 +69,6 @@ export const LandingPage: React.FC = () => {
           <p className="text-slate-600">Get a comprehensive TeachBack score, improved explanations, and practice questions.</p>
         </div>
       </section>
-    </div>
+    </AnimatedPageShell>
   );
 };

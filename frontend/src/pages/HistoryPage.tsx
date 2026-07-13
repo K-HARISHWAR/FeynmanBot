@@ -4,6 +4,7 @@ import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { api } from '../config/api';
 import { Loader } from '../components/common/Loader';
+import { AnimatedPageShell } from '../components/layout/AnimatedPageShell';
 
 interface HistorySession {
   session_id: string;
@@ -37,23 +38,34 @@ export const HistoryPage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <div className="py-20 flex justify-center"><Loader size="lg" text="Loading history..." /></div>;
+    return (
+      <AnimatedPageShell variant="history">
+        <div className="py-20 flex justify-center"><Loader size="lg" text="Loading history..." /></div>
+      </AnimatedPageShell>
+    );
   }
 
   if (error) {
-    return <div className="py-20 text-center text-rose-500">{error}</div>;
+    return (
+      <AnimatedPageShell variant="history">
+        <div className="py-20 text-center text-rose-500">{error}</div>
+      </AnimatedPageShell>
+    );
   }
 
   if (history.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto space-y-8 text-center py-20">
-        <h1 className="text-3xl font-bold text-slate-900">Session History</h1>
-        <p className="text-slate-500 mt-2">No learning history yet. Complete a TeachBack session to see it here.</p>
-      </div>
+      <AnimatedPageShell variant="history">
+        <div className="max-w-4xl mx-auto space-y-8 text-center py-20">
+          <h1 className="text-3xl font-bold text-slate-900">Session History</h1>
+          <p className="text-slate-500 mt-2">No learning history yet. Complete a TeachBack session to see it here.</p>
+        </div>
+      </AnimatedPageShell>
     );
   }
 
   return (
+    <AnimatedPageShell variant="history">
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Session History</h1>
@@ -62,7 +74,7 @@ export const HistoryPage: React.FC = () => {
 
       <div className="space-y-4">
         {history.map((session, i) => (
-          <Card key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 gap-4">
+          <Card key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 gap-4 hover:-translate-y-1 hover:shadow-md hover:border-primary-200 transition-all duration-300">
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
@@ -90,5 +102,6 @@ export const HistoryPage: React.FC = () => {
         ))}
       </div>
     </div>
+    </AnimatedPageShell>
   );
 };

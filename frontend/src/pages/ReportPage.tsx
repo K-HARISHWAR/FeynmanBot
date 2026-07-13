@@ -12,6 +12,7 @@ import { ExplanationComparison } from '../components/report/ExplanationCompariso
 import { KnowledgeGapMap } from '../components/report/KnowledgeGapMap';
 import { RevisionCards } from '../components/report/RevisionCards';
 import { ConfidenceInsight } from '../components/report/ConfidenceInsight';
+import { AnimatedPageShell } from '../components/layout/AnimatedPageShell';
 
 export const ReportPage: React.FC = () => {
   const { reportId } = useParams<{ reportId: string }>();
@@ -114,6 +115,7 @@ export const ReportPage: React.FC = () => {
   };
 
   return (
+    <AnimatedPageShell variant="report">
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -191,5 +193,6 @@ export const ReportPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </AnimatedPageShell>
   );
 };

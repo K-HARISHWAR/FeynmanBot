@@ -12,6 +12,7 @@ import { ExplainSimplerButton } from '../components/teach/ExplainSimplerButton';
 import { LearningTimeline } from '../components/teach/LearningTimeline';
 import { TeachModeStatus } from '../components/teach/TeachModeStatus';
 import type { BotStatus } from '../components/teach/TeachModeStatus';
+import { AnimatedPageShell } from '../components/layout/AnimatedPageShell';
 
 export const TeachPage: React.FC = () => {
   const navigate = useNavigate();
@@ -131,16 +132,19 @@ export const TeachPage: React.FC = () => {
 
   if (step === 'evaluating') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+      <AnimatedPageShell variant="teach">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
         <LearningTimeline currentStep={getTimelineStep()} />
         <TeachModeStatus status={botStatus} />
         <Loader size="lg" text="Generating your personalized report..." />
       </div>
+      </AnimatedPageShell>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-12">
+    <AnimatedPageShell variant="teach">
+      <div className="max-w-4xl mx-auto pb-12">
       <div className="mb-8 mt-4">
         <LearningTimeline currentStep={getTimelineStep()} />
       </div>
@@ -262,5 +266,6 @@ export const TeachPage: React.FC = () => {
         </div>
       )}
     </div>
+    </AnimatedPageShell>
   );
 };

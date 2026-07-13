@@ -3,6 +3,7 @@ import { Card } from '../components/common/Card';
 import { BookOpen, Target, Clock, Trophy } from 'lucide-react';
 import { api } from '../config/api';
 import { Loader } from '../components/common/Loader';
+import { AnimatedPageShell } from '../components/layout/AnimatedPageShell';
 
 interface DashboardStats {
   total_sessions: number;
@@ -37,23 +38,34 @@ export const DashboardPage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <div className="py-20 flex justify-center"><Loader size="lg" text="Loading dashboard..." /></div>;
+    return (
+      <AnimatedPageShell variant="dashboard">
+        <div className="py-20 flex justify-center"><Loader size="lg" text="Loading dashboard..." /></div>
+      </AnimatedPageShell>
+    );
   }
 
   if (error) {
-    return <div className="py-20 text-center text-rose-500">{error}</div>;
+    return (
+      <AnimatedPageShell variant="dashboard">
+        <div className="py-20 text-center text-rose-500">{error}</div>
+      </AnimatedPageShell>
+    );
   }
 
   if (!stats || stats.total_sessions === 0) {
     return (
-      <div className="max-w-6xl mx-auto space-y-8 text-center py-20">
-        <h1 className="text-3xl font-bold text-slate-900">Your Dashboard</h1>
-        <p className="text-slate-500 mt-2">No TeachBack sessions yet. Start your first session.</p>
-      </div>
+      <AnimatedPageShell variant="dashboard">
+        <div className="max-w-6xl mx-auto space-y-8 text-center py-20">
+          <h1 className="text-3xl font-bold text-slate-900">Your Dashboard</h1>
+          <p className="text-slate-500 mt-2">No TeachBack sessions yet. Start your first session.</p>
+        </div>
+      </AnimatedPageShell>
     );
   }
 
   return (
+    <AnimatedPageShell variant="dashboard">
     <div className="max-w-6xl mx-auto space-y-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Your Dashboard</h1>
@@ -117,5 +129,6 @@ export const DashboardPage: React.FC = () => {
         </div>
       </Card>
     </div>
+    </AnimatedPageShell>
   );
 };
