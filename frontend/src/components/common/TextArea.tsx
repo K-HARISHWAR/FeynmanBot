@@ -3,14 +3,15 @@ import React, { forwardRef } from 'react';
 interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
+  wrapperClassName?: string;
 }
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  ({ label, error, className = '', ...props }, ref) => {
+  ({ label, error, className = '', wrapperClassName = 'w-full', ...props }, ref) => {
     return (
-      <div className="w-full">
+      <div className={wrapperClassName}>
         {label && (
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
             {label}
           </label>
         )}
