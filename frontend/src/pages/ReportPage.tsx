@@ -119,8 +119,8 @@ export const ReportPage: React.FC = () => {
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">TeachBack Evaluation</h1>
-          <p className="text-slate-500 mt-1">Here is how well you understood the topic.</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">TeachBack Evaluation</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Here is how well you understood the topic.</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline">Save Report</Button>
@@ -149,7 +149,7 @@ export const ReportPage: React.FC = () => {
           )}
           
           <Card className="p-6">
-            <h3 className="text-xl font-bold text-slate-800 mb-6">Misconception Radar</h3>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6">Misconception Radar</h3>
             <MisconceptionRadar 
               misconceptions={report.misconceptions}
               weaknesses={report.weaknesses}
@@ -168,7 +168,7 @@ export const ReportPage: React.FC = () => {
         {/* Right Column: Detailed Feedback & Study Material */}
         <div className="col-span-1 lg:col-span-8 space-y-6">
           <Card className="p-6">
-            <h3 className="text-xl font-bold text-slate-800 mb-6">Explanation Analysis</h3>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6">Explanation Analysis</h3>
             <ExplanationComparison 
               original={report.student_explanation}
               improved={report.improved_explanation}
@@ -179,14 +179,14 @@ export const ReportPage: React.FC = () => {
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-6">
               <RefreshCw className="text-primary-600" />
-              <h3 className="text-xl font-bold text-slate-800">Revision Cards</h3>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Revision Cards</h3>
             </div>
-            <p className="text-sm text-slate-500 mb-6">Review these flashcards to solidify your understanding.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Review these flashcards to solidify your understanding.</p>
             <RevisionCards cards={deriveRevisionCards()} />
             
-            <div className="mt-8 bg-slate-50 p-5 rounded-xl border border-slate-200">
-              <h4 className="text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Practice Question</h4>
-              <p className="text-slate-800 font-medium">{report.practice_question}</p>
+            <div className="mt-8 bg-slate-50 dark:bg-slate-800/80 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider">Practice Question</h4>
+              <p className="text-slate-800 dark:text-slate-200 font-medium">{report.practice_question}</p>
             </div>
           </Card>
         </div>

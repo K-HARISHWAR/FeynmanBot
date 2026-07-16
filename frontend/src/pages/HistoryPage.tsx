@@ -57,8 +57,8 @@ export const HistoryPage: React.FC = () => {
     return (
       <AnimatedPageShell variant="history">
         <div className="max-w-4xl mx-auto space-y-8 text-center py-20">
-          <h1 className="text-3xl font-bold text-slate-900">Session History</h1>
-          <p className="text-slate-500 mt-2">No learning history yet. Complete a TeachBack session to see it here.</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Session History</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">No learning history yet. Complete a TeachBack session to see it here.</p>
         </div>
       </AnimatedPageShell>
     );
@@ -68,8 +68,8 @@ export const HistoryPage: React.FC = () => {
     <AnimatedPageShell variant="history">
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Session History</h1>
-        <p className="text-slate-500 mt-2">Review your past explanations and feedback.</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Session History</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-2">Review your past explanations and feedback.</p>
       </div>
 
       <div className="space-y-4">
@@ -77,12 +77,12 @@ export const HistoryPage: React.FC = () => {
           <Card key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 gap-4 hover:-translate-y-1 hover:shadow-md hover:border-primary-200 transition-all duration-300">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
                   {session.subject}
                 </span>
                 <span className="text-sm text-slate-400">{new Date(session.created_at).toLocaleDateString()}</span>
               </div>
-              <h3 className="text-lg font-bold text-slate-900">{session.topic}</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{session.topic}</h3>
             </div>
             
             <div className="flex items-center gap-6">

@@ -147,8 +147,8 @@ export const TeachPage: React.FC = () => {
     <AnimatedPageShell variant="teach">
       <div className="max-w-7xl mx-auto pb-12 px-4 xl:px-8">
         <div className="mb-8 text-center mt-4">
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Teach FeynmanBot</h1>
-          <p className="text-slate-500 mt-3 text-lg">Explain the concept as simply as you can. True understanding is shown by simplicity.</p>
+          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Teach FeynmanBot</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-3 text-lg">Explain the concept as simply as you can. True understanding is shown by simplicity.</p>
         </div>
 
         {error && (
@@ -190,7 +190,7 @@ export const TeachPage: React.FC = () => {
           {/* Right Panel: Teaching Interface */}
           <div className="lg:col-span-7">
             <Card className="shadow-lg border-primary-100 overflow-hidden h-full flex flex-col">
-              <div className="bg-primary-50 p-6 border-b border-primary-100">
+              <div className="bg-primary-50 dark:bg-slate-800/80 p-6 border-b border-primary-100 dark:border-slate-700">
                 <TeachModeStatus status={botStatus} />
               </div>
               
@@ -221,14 +221,14 @@ export const TeachPage: React.FC = () => {
       {step === 'qa' && (
         <div className="space-y-6">
           <Card className="shadow-lg border-primary-100 overflow-hidden">
-            <div className="bg-primary-50 p-6 border-b border-primary-100 mb-6">
+            <div className="bg-primary-50 dark:bg-slate-800/80 p-6 border-b border-primary-100 dark:border-slate-700 mb-6">
               <TeachModeStatus status={botStatus} />
             </div>
             <div className="px-6 pb-6">
-              <h3 className="text-sm font-semibold text-primary-800 mb-3 uppercase tracking-wider">
+              <h3 className="text-sm font-semibold text-primary-800 dark:text-primary-400 mb-3 uppercase tracking-wider">
                 Question {questionNumber} of 3
               </h3>
-              <p className="text-slate-800 text-lg leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <p className="text-slate-800 dark:text-slate-200 text-lg leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                 {currentQuestion}
               </p>
             </div>
@@ -266,14 +266,14 @@ export const TeachPage: React.FC = () => {
       {/* Timeline Sidebar (Right) */}
       <div className="hidden lg:block w-56 flex-shrink-0 relative">
         <div className="sticky top-24 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-primary-100">
-          <h3 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wider text-center">Progress</h3>
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider text-center">Progress</h3>
           <LearningTimeline currentStep={getTimelineStep()} />
         </div>
       </div>
       
       {/* Mobile Timeline */}
       <div className="lg:hidden w-full overflow-hidden mt-8 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-primary-100">
-        <h3 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wider text-center">Progress</h3>
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider text-center">Progress</h3>
         <LearningTimeline currentStep={getTimelineStep()} />
       </div>
 
