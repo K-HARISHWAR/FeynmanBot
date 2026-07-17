@@ -156,13 +156,15 @@ export const ReportPage: React.FC = () => {
             />
           </Card>
           
-          <KnowledgeGapMap 
-            topic={report.topic || "Current Topic"}
-            understood={report.strengths}
-            partial={report.weaknesses}
-            missing={report.missing_concepts}
-            misconceptions={report.misconceptions}
-          />
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <RefreshCw className="text-primary-600" />
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Revision Cards</h3>
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Review these flashcards to solidify your understanding.</p>
+            <RevisionCards cards={deriveRevisionCards()} />
+          </Card>
+          
         </div>
         
         {/* Right Column: Detailed Feedback & Study Material */}
@@ -176,19 +178,14 @@ export const ReportPage: React.FC = () => {
             />
           </Card>
           
-          <Card className="p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <RefreshCw className="text-primary-600" />
-              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Revision Cards</h3>
-            </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Review these flashcards to solidify your understanding.</p>
-            <RevisionCards cards={deriveRevisionCards()} />
-            
-            <div className="mt-8 bg-slate-50 dark:bg-slate-800/80 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
-              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider">Practice Question</h4>
-              <p className="text-slate-800 dark:text-slate-200 font-medium">{report.practice_question}</p>
-            </div>
-          </Card>
+          <KnowledgeGapMap 
+            topic={report.topic || "Current Topic"}
+            understood={report.strengths}
+            partial={report.weaknesses}
+            missing={report.missing_concepts}
+            misconceptions={report.misconceptions}
+          />
+
         </div>
       </div>
     </div>

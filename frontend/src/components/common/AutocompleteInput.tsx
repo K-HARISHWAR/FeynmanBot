@@ -72,13 +72,13 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
 
   return (
     <div className="w-full relative" ref={wrapperRef}>
-      <label className="block text-sm font-medium text-slate-700 mb-1">
+      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
         {label}
       </label>
       
       <div className="relative">
         <input
-          className={`input-field pr-10 ${error ? 'border-rose-500 focus:ring-rose-500 focus:border-rose-500' : ''} ${className}`}
+          className={`input-field pr-10 text-slate-900 dark:text-white bg-white/80 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-600 ${error ? 'border-rose-500 focus:ring-rose-500 focus:border-rose-500' : ''} ${className}`}
           value={value}
           onChange={(e) => {
             onChange(e.target.value);
@@ -100,12 +100,12 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
 
       {/* Dropdown Suggestions */}
       {showDropdown && suggestions.length > 0 && (
-        <ul className="absolute z-10 w-full mt-1 bg-white/90 backdrop-blur-md border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-auto overflow-x-hidden">
+        <ul className="absolute z-10 w-full mt-1 bg-white/90 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-60 overflow-auto overflow-x-hidden">
           {suggestions.map((suggestion, index) => (
             <li
               key={index}
               onClick={() => handleSelect(suggestion)}
-              className="px-4 py-2 hover:bg-primary-50 cursor-pointer text-slate-800 transition-colors"
+              className="px-4 py-2 hover:bg-primary-50 dark:hover:bg-slate-700 cursor-pointer text-slate-800 dark:text-slate-200 transition-colors"
             >
               {suggestion}
             </li>
@@ -126,7 +126,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
                 onChange(chip);
                 setShowDropdown(false);
               }}
-              className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-xs font-medium rounded-full hover:bg-primary-50 hover:text-primary-700 hover:border-primary-200 transition-all"
+              className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium rounded-full hover:bg-primary-50 dark:hover:bg-slate-700 hover:text-primary-700 dark:hover:text-primary-300 hover:border-primary-200 dark:hover:border-slate-600 transition-all"
             >
               {chip}
             </button>

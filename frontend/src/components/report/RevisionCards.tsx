@@ -25,10 +25,10 @@ const RevisionCard: React.FC<RevisionCardProps> = ({ question, answer, category 
             <p className="text-sm text-slate-700 leading-relaxed">{answer}</p>
           </div>
         ) : (
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-center text-primary-500 group-hover:text-primary-600 transition-colors">
-            <Eye className="w-4 h-4 mr-1.5" />
-            <span className="text-xs font-semibold">Click to show answer</span>
-          </div>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-center text-primary-500 group-hover:text-primary-600 transition-colors">
+              <Eye className="w-4 h-4 mr-1.5" />
+              <span className="text-xs font-semibold">Click to show {category === 'Practice' ? 'question' : 'answer'}</span>
+            </div>
         )}
       </div>
       {showAnswer && (
@@ -36,7 +36,7 @@ const RevisionCard: React.FC<RevisionCardProps> = ({ question, answer, category 
           onClick={(e) => { e.stopPropagation(); setShowAnswer(false); }}
           className="w-full py-2 bg-slate-50 border-t border-slate-200 text-xs font-semibold text-slate-500 hover:text-slate-700 flex items-center justify-center"
         >
-          <EyeOff className="w-3.5 h-3.5 mr-1.5" /> Hide Answer
+          <EyeOff className="w-3.5 h-3.5 mr-1.5" /> Hide {category === 'Practice' ? 'Question' : 'Answer'}
         </button>
       )}
     </div>
