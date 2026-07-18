@@ -25,7 +25,7 @@ export const AIStudentModeSelector: React.FC<AIStudentModeSelectorProps> = ({ se
             key={mode.id}
             disabled={disabled}
             onClick={() => onSelectMode(mode.id)}
-            className={`relative overflow-hidden group p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${
+            className={`relative overflow-hidden group p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
               selectedMode === mode.id 
                 ? 'bg-primary-50 dark:bg-primary-900/40 border-primary-500 shadow-md transform -translate-y-1 ring-2 ring-primary-200 dark:ring-primary-900' 
                 : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-500 hover:bg-slate-50 dark:hover:bg-slate-700'

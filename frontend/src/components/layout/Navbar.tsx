@@ -12,7 +12,14 @@ export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const isAuth = !!user;
   
-  const handleLogout = async () => {
+  const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
+  
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleLogoutConfirm = async () => {
+    setShowLogoutConfirm(false);
     await logout();
     navigate('/login');
   };
@@ -61,7 +68,7 @@ export const Navbar: React.FC = () => {
                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold uppercase">
                    {user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                  </div>
-                 <button onClick={handleLogout} className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
+                 <button onClick={handleLogoutClick} className="cursor-pointer text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
                    <LogOut className="w-5 h-5" />
                  </button>
                </div>
@@ -83,6 +90,20 @@ export const Navbar: React.FC = () => {
             <NavLink to="/dashboard" onClick={() => setIsOpen(false)} className={({ isActive }) => `block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors ${isActive ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-500 text-primary-700 dark:text-primary-300' : 'border-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300'}`}>Dashboard</NavLink>
             <NavLink to="/teach" onClick={() => setIsOpen(false)} className={({ isActive }) => `block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors ${isActive ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-500 text-primary-700 dark:text-primary-300' : 'border-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300'}`}>Teach</NavLink>
             <NavLink to="/history" onClick={() => setIsOpen(false)} className={({ isActive }) => `block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors ${isActive ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-500 text-primary-700 dark:text-primary-300' : 'border-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300'}`}>History</NavLink>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl max-w-sm w-full border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Log out</h3>
+            <p className="text-slate-600 dark:text-slate-300 mb-6 text-sm">Are you sure you want to logout?</p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setShowLogoutConfirm(false)}>Cancel</Button>
+              <Button variant="danger" onClick={handleLogoutConfirm}>Log out</Button>
+            </div>
           </div>
         </div>
       )}

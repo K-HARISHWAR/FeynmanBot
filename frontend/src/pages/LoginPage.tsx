@@ -58,8 +58,8 @@ export const LoginPage: React.FC = () => {
     <AnimatedPageShell variant="landing">
       <div className="max-w-md mx-auto px-4 py-12">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Welcome back</h1>
-          <p className="text-slate-500 mt-2">Log in to continue learning with FeynmanBot</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Welcome back</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">Log in to continue learning with FeynmanBot</p>
         </div>
 
         <Card className="p-8">
@@ -92,7 +92,7 @@ export const LoginPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-slate-600">
+          <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
             Don't have an account?{' '}
             <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
               Sign up

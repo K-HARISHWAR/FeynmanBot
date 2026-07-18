@@ -22,6 +22,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const isSelecting = useRef(false);
 
   // Debounce the fetch
   useEffect(() => {
@@ -31,14 +32,28 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
         return;
       }
       
+      if (isSelecting.current) {
+        isSelecting.current = false;
+        return;
+      }
+      
       setIsLoading(true);
       try {
         const res = await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(value)}&limit=5&origin=*&format=json`);
         const data = await res.json();
         // data[1] contains the array of suggested strings
         if (data && data[1]) {
-          setSuggestions(data[1]);
-          if (data[1].length > 0) setShowDropdown(true);
+          // Filter out common entertainment terms to keep topics educational
+          const badKeywords = ['(film)', '(tv series)', '(novel)', '(band)', '(album)', '(song)', '(franchise)', '(character)', 'season', 'episode', 'game of thrones', 'movie'];
+          const filtered = data[1].filter((s: string) => !badKeywords.some(bw => s.toLowerCase().includes(bw)));
+          
+          if (filtered.length === 1 && filtered[0] === value) {
+            setSuggestions([]);
+            setShowDropdown(false);
+          } else {
+            setSuggestions(filtered);
+            if (filtered.length > 0) setShowDropdown(true);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch autocomplete suggestions", err);
@@ -66,6 +81,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   }, []);
 
   const handleSelect = (suggestion: string) => {
+    isSelecting.current = true;
     onChange(suggestion);
     setShowDropdown(false);
   };
@@ -100,12 +116,12 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
 
       {/* Dropdown Suggestions */}
       {showDropdown && suggestions.length > 0 && (
-        <ul className="absolute z-10 w-full mt-1 bg-white/90 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-60 overflow-auto overflow-x-hidden">
+        <ul className="absolute z-50 w-full mt-1 bg-white/90 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-60 overflow-auto overflow-x-hidden">
           {suggestions.map((suggestion, index) => (
             <li
               key={index}
               onClick={() => handleSelect(suggestion)}
-              className="px-4 py-2 hover:bg-primary-50 dark:hover:bg-slate-700 cursor-pointer text-slate-800 dark:text-slate-200 transition-colors"
+              className="px-4 py-3 hover:bg-primary-50 dark:hover:bg-slate-700/80 cursor-pointer text-slate-800 dark:text-slate-200 transition-colors border-b last:border-b-0 border-slate-100 dark:border-slate-700/50"
             >
               {suggestion}
             </li>
