@@ -371,14 +371,17 @@ class SessionService:
 
     async def get_history(self, user_id: str):
         if settings.use_mock_db:
-            sessions_list = []
+            completed_list = []
+            incomplete_list = []
+            sessions = [s for s in _mock_db["sessions"].values() if s.get("user_id") == user_id]
             reports = [r for r in _mock_db["reports"].values() if r.get("user_id") == user_id]
+            report_dict = {r["session_id"]: r for r in reports}
             
-            for r in reports:
-                s_id = r.get("session_id")
-                s = _mock_db["sessions"].get(s_id)
-                if s:
-                    sessions_list.append({
+            for s in sessions:
+                s_id = s["id"]
+                if s_id in report_dict:
+                    r = report_dict[s_id]
+                    completed_list.append({
                         "session_id": s_id,
                         "report_id": r["id"],
                         "subject": s["subject"],
@@ -386,27 +389,36 @@ class SessionService:
                         "score": r["overall_score"],
                         "created_at": "2026-07-07T20:30:00"
                     })
+                else:
+                    incomplete_list.append({
+                        "session_id": s_id,
+                        "subject": s["subject"],
+                        "topic": s["topic"],
+                        "created_at": "2026-07-07T20:30:00"
+                    })
                     
-            sessions_list.reverse()
-            return {"sessions": sessions_list}
+            completed_list.reverse()
+            incomplete_list.reverse()
+            return {"sessions": completed_list, "incomplete_sessions": incomplete_list}
         else:
             try:
-                reports_res = supabase.table("reports").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
-                reports = reports_res.data
+                sessions_res = supabase.table("teach_sessions").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
+                all_sessions = sessions_res.data
                 
-                if not reports:
-                    return {"sessions": []}
-                    
-                session_ids = [r["session_id"] for r in reports]
-                sessions_res = supabase.table("teach_sessions").select("*").in_("id", session_ids).execute()
-                session_dict = {s["id"]: s for s in sessions_res.data}
+                if not all_sessions:
+                    return {"sessions": [], "incomplete_sessions": []}
                 
-                sessions_list = []
-                for r in reports:
-                    s_id = r.get("session_id")
-                    s = session_dict.get(s_id)
-                    if s:
-                        sessions_list.append({
+                reports_res = supabase.table("reports").select("*").eq("user_id", user_id).execute()
+                reports = {r["session_id"]: r for r in reports_res.data}
+                
+                completed = []
+                incomplete = []
+                
+                for s in all_sessions:
+                    s_id = s["id"]
+                    if s_id in reports:
+                        r = reports[s_id]
+                        completed.append({
                             "session_id": s_id,
                             "report_id": r["id"],
                             "subject": s["subject"],
@@ -414,10 +426,102 @@ class SessionService:
                             "score": r["overall_score"],
                             "created_at": r.get("created_at")
                         })
+                    elif s.get("status") == "started":
+                        incomplete.append({
+                            "session_id": s_id,
+                            "subject": s["subject"],
+                            "topic": s["topic"],
+                            "created_at": s.get("created_at")
+                        })
                         
-                return {"sessions": sessions_list}
+                return {"sessions": completed, "incomplete_sessions": incomplete}
             except Exception as e:
                 logger.error(f"Supabase error in get_history: {e}")
+                raise HTTPException(status_code=500, detail=f"Database error: {e}")
+
+    async def get_session_resume_data(self, session_id: str, user_id: str):
+        if settings.use_mock_db:
+            session = _mock_db["sessions"].get(session_id)
+            if not session:
+                raise HTTPException(status_code=404, detail="Session not found")
+            if session.get("user_id") != user_id:
+                raise HTTPException(status_code=403, detail="You do not have access to this session.")
+            
+            questions = [q for q in _mock_db["questions"] if q["session_id"] == session_id]
+            questions.sort(key=lambda x: x["question_number"])
+            
+            history = []
+            for q in questions:
+                if q.get("student_answer"):
+                    history.append({"q": q["ai_question"], "a": q["student_answer"]})
+            
+            current_q = None
+            q_num = 1
+            if questions:
+                last_q = questions[-1]
+                if not last_q.get("student_answer"):
+                    current_q = last_q["ai_question"]
+                    q_num = last_q["question_number"]
+                elif last_q["question_number"] >= 3:
+                    current_q = None
+                    q_num = last_q["question_number"]
+                else:
+                    current_q = "Please continue."
+                    q_num = last_q["question_number"] + 1
+            
+            return {
+                "session_id": session_id,
+                "subject": session.get("subject", ""),
+                "topic": session.get("topic", ""),
+                "explanation": session.get("student_explanation", ""),
+                "current_question": current_q,
+                "question_number": q_num,
+                "history": history
+            }
+        else:
+            try:
+                session_res = supabase.table("teach_sessions").select("*").eq("id", session_id).execute()
+                if not session_res.data:
+                    raise HTTPException(status_code=404, detail="Session not found")
+                session = session_res.data[0]
+                if session.get("user_id") != user_id:
+                    raise HTTPException(status_code=403, detail="You do not have access to this session.")
+                
+                questions_res = supabase.table("session_questions").select("*").eq("session_id", session_id).order("question_number").execute()
+                questions = questions_res.data
+                
+                history = []
+                for q in questions:
+                    if q.get("student_answer"):
+                        history.append({"q": q["ai_question"], "a": q["student_answer"]})
+                        
+                current_q = None
+                q_num = 1
+                if questions:
+                    last_q = questions[-1]
+                    if not last_q.get("student_answer"):
+                        current_q = last_q["ai_question"]
+                        q_num = last_q["question_number"]
+                    elif last_q["question_number"] >= 3:
+                        current_q = None
+                        q_num = last_q["question_number"]
+                    else:
+                        current_q = "Please continue."
+                        q_num = last_q["question_number"] + 1
+                        
+                return {
+                    "session_id": session_id,
+                    "subject": session.get("subject", ""),
+                    "topic": session.get("topic", ""),
+                    "explanation": session.get("student_explanation", ""),
+                    "current_question": current_q,
+                    "question_number": q_num,
+                    "history": history
+                }
+            except HTTPException:
+                raise
+            except Exception as e:
+                logger.error(f"Supabase error in get_session_resume_data: {e}")
                 raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 session_service = SessionService()

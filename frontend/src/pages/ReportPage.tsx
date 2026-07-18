@@ -122,8 +122,8 @@ export const ReportPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">TeachBack Evaluation</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Here is how well you understood the topic.</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline">Save Report</Button>
+        <div className="flex gap-3 print:hidden">
+          <Button variant="outline" onClick={() => window.print()}>Save as PDF</Button>
           <Link to="/teach">
             <Button>Teach Another Topic</Button>
           </Link>

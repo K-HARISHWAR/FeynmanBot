@@ -62,7 +62,8 @@ Return only valid JSON in this exact structure:
 }}
 
 Rules:
-* Be accurate and strict, but encouraging.
+* Provide all scores as an integer between 0 and 100 (where 100 is perfect).
+* Be accurate but encouraging. A reasonable beginner explanation should score at least 60-70.
 * Do not give random praise.
 * Identify real gaps in understanding.
 * The improved explanation should be clear enough for a beginner.

@@ -20,5 +20,10 @@ export const sessionApi = {
   evaluateSession: async (data: EvaluateRequest): Promise<any> => {
     const response = await api.post('/sessions/evaluate', data);
     return response.data;
+  },
+
+  resumeSession: async (sessionId: string): Promise<any> => {
+    const response = await api.get(`/sessions/${sessionId}/resume`);
+    return response.data;
   }
 };

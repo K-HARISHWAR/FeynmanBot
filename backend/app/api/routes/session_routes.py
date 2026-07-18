@@ -42,3 +42,7 @@ async def evaluate_session(request: EvaluateRequest, current_user: CurrentUser =
     result = await session_service.evaluate(request.session_id, current_user.id, request.ai_mode, request.confidence_before)
     return result
 
+@router.get("/{session_id}/resume")
+async def resume_session(session_id: str, current_user: CurrentUser = Depends(get_current_user)):
+    return await session_service.get_session_resume_data(session_id, current_user.id)
+

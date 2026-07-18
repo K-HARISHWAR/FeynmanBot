@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { AutocompleteInput } from '../components/common/AutocompleteInput';
@@ -17,7 +17,10 @@ import { useAuth } from '../features/auth/useAuth';
 
 export const TeachPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialSessionId = searchParams.get('session_id');
   const { user } = useAuth();
+  
   const [step, setStep] = useState<'init' | 'qa' | 'evaluating'>('init');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,6 +47,36 @@ export const TeachPage: React.FC = () => {
     if (step === 'evaluating') return 5;
     return 0;
   };
+
+  useEffect(() => {
+    if (initialSessionId) {
+      setLoading(true);
+      sessionApi.resumeSession(initialSessionId)
+        .then(res => {
+          setSessionId(res.session_id);
+          setSubject(res.subject);
+          setTopic(res.topic);
+          setExplanation(res.explanation);
+          setQaHistory(res.history || []);
+          if (res.current_question) {
+            setCurrentQuestion(res.current_question);
+            setQuestionNumber(res.question_number);
+            setStep('qa');
+            setBotStatus('ready');
+          } else {
+             // either completed or some error, redirect to history
+             navigate('/history');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          setError('Failed to resume session');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [initialSessionId, navigate]);
 
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,7 +241,30 @@ export const TeachPage: React.FC = () => {
           
           {step === 'qa' && (
             <div className="space-y-6 max-w-4xl mx-auto">
-              <Card className="shadow-sm border-primary-100 overflow-hidden">
+              {qaHistory.length > 0 && (
+                <div className="space-y-4">
+                  {qaHistory.map((item, index) => (
+                    <Card key={index} className="shadow-sm border-slate-200 dark:border-slate-700 opacity-70 hover:opacity-100 transition-opacity">
+                      <div className="px-6 py-4">
+                        <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                          Question {index + 1}
+                        </h3>
+                        <p className="text-slate-700 dark:text-slate-300 text-sm mb-4">
+                          {item.q}
+                        </p>
+                        <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                          <p className="text-xs font-semibold text-primary-600 dark:text-primary-400 mb-1 uppercase tracking-wider">Your Answer</p>
+                          <p className="text-slate-700 dark:text-slate-300 text-sm">
+                            {item.a}
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              <Card className="shadow-sm border-primary-200 dark:border-primary-800 overflow-hidden ring-2 ring-primary-100 dark:ring-primary-900/30">
                 <div className="px-6 py-6">
                   <h3 className="text-sm font-semibold text-primary-800 dark:text-primary-400 mb-3 uppercase tracking-wider">
                     Question {questionNumber} of 3
