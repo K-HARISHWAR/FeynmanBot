@@ -53,11 +53,11 @@ Return only valid JSON in this exact structure:
   "improved_explanation": "",
   "practice_question": "",
   "revision_cards": [
-    {
+    {{
       "question": "",
       "answer": "",
       "category": ""
-    }
+    }}
   ]
 }}
 

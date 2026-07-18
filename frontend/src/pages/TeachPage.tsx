@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
-import { Input } from '../components/common/Input';
 import { AutocompleteInput } from '../components/common/AutocompleteInput';
 import { TextArea } from '../components/common/TextArea';
 import { Loader } from '../components/common/Loader';
@@ -14,19 +13,11 @@ import { LearningTimeline } from '../components/teach/LearningTimeline';
 import { TeachModeStatus } from '../components/teach/TeachModeStatus';
 import type { BotStatus } from '../components/teach/TeachModeStatus';
 import { AnimatedPageShell } from '../components/layout/AnimatedPageShell';
-
-const POPULAR_SUBJECTS = ['Physics', 'Computer Science', 'Mathematics', 'Biology', 'History'];
-
-const TOPIC_SUGGESTIONS: Record<string, string[]> = {
-  'Physics': ["Newton's Laws", 'Kinematics', 'Thermodynamics', 'Electromagnetism'],
-  'Computer Science': ['Data Structures', 'Algorithms', 'Machine Learning', 'Databases'],
-  'Mathematics': ['Calculus', 'Linear Algebra', 'Probability', 'Geometry'],
-  'Biology': ['Genetics', 'Cell Biology', 'Evolution', 'Human Anatomy'],
-  'History': ['World War II', 'Ancient Rome', 'Industrial Revolution'],
-};
+import { useAuth } from '../features/auth/useAuth';
 
 export const TeachPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState<'init' | 'qa' | 'evaluating'>('init');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,7 +35,7 @@ export const TeachPage: React.FC = () => {
   
   // New UI States
   const [aiMode, setAiMode] = useState('Friendly Beginner');
-  const [confidenceBefore, setConfidenceBefore] = useState<number>(3);
+  const [confidenceBefore] = useState<number>(3);
   const [botStatus, setBotStatus] = useState<BotStatus>('idle');
   
   const getTimelineStep = () => {
@@ -66,7 +57,7 @@ export const TeachPage: React.FC = () => {
     setLoading(true);
     setBotStatus('listening');
     try {
-      const startRes = await sessionApi.startSession({ user_id: "demo-user", subject, topic, ai_mode: aiMode, confidence_before: confidenceBefore });
+      const startRes = await sessionApi.startSession({ user_id: user?.id || "", subject, topic, ai_mode: aiMode, confidence_before: confidenceBefore });
       setSessionId(startRes.session_id);
       
       const explainRes = await sessionApi.explainTopic({

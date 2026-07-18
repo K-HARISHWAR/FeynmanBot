@@ -25,7 +25,7 @@ export const HistoryPage: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api.get<HistoryResponse>('/history/demo-user')
+    api.get<HistoryResponse>('/history/me')
       .then(res => {
         setHistory(res.data.sessions);
         setLoading(false);

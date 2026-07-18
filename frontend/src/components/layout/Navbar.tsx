@@ -1,13 +1,21 @@
 import React from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Brain, Menu, X } from 'lucide-react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Brain, Menu, X, LogOut } from 'lucide-react';
 import { Button } from '../common/Button';
 import { ThemeToggle } from './ThemeToggle';
+import { useAuth } from '../../features/auth/useAuth';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
-  const isAuth = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/teach') || location.pathname.startsWith('/history');
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const isAuth = !!user;
+  
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
   
   return (
     <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 transition-colors">
@@ -40,19 +48,22 @@ export const Navbar: React.FC = () => {
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
             <ThemeToggle />
-            {!isAuth && (
+            {!isAuth && location.pathname !== '/login' && location.pathname !== '/register' && (
                <>
                  <Link to="/login" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 font-medium text-sm">Log in</Link>
-                 <Link to="/teach">
-                   <Button variant="primary" size="sm">Start Teaching</Button>
+                 <Link to="/register">
+                   <Button variant="primary" size="sm">Sign up</Button>
                  </Link>
                </>
             )}
             {isAuth && (
-               <div className="flex items-center gap-2">
-                 <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold">
-                   U
+               <div className="flex items-center gap-4">
+                 <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold uppercase">
+                   {user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                  </div>
+                 <button onClick={handleLogout} className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
+                   <LogOut className="w-5 h-5" />
+                 </button>
                </div>
             )}
           </div>

@@ -25,7 +25,7 @@ export const DashboardPage: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api.get<DashboardStats>('/dashboard/demo-user')
+    api.get<DashboardStats>('/dashboard/me')
       .then(res => {
         setStats(res.data);
         setLoading(false);

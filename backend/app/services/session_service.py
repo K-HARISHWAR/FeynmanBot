@@ -43,12 +43,21 @@ class SessionService:
             
         return session_id
         
-    async def explain(self, session_id: str, subject: str, topic: str, student_explanation: str, ai_mode: str = None):
+    async def explain(self, session_id: str, subject: str, topic: str, student_explanation: str, user_id: str, ai_mode: str = None):
         if settings.use_mock_db:
             if session_id in _mock_db["sessions"]:
+                if _mock_db["sessions"][session_id].get("user_id") != user_id:
+                    raise HTTPException(status_code=403, detail="You do not have access to this session.")
                 _mock_db["sessions"][session_id]["student_explanation"] = student_explanation
         else:
             try:
+                # Check ownership
+                session_res = supabase.table("teach_sessions").select("user_id").eq("id", session_id).execute()
+                if not session_res.data:
+                    raise HTTPException(status_code=404, detail="Session not found")
+                if session_res.data[0].get("user_id") != user_id:
+                    raise HTTPException(status_code=403, detail="You do not have access to this session.")
+                    
                 res = supabase.table("teach_sessions").update({
                     "student_explanation": student_explanation
                 }).eq("id", session_id).execute()
@@ -81,13 +90,23 @@ class SessionService:
             
         return question
 
-    async def answer(self, session_id: str, current_question: str, student_answer: str, question_number: int, ai_mode: str = None):
+    async def answer(self, session_id: str, current_question: str, student_answer: str, question_number: int, user_id: str, ai_mode: str = None):
         if settings.use_mock_db:
+            session = _mock_db["sessions"].get(session_id)
+            if session and session.get("user_id") != user_id:
+                raise HTTPException(status_code=403, detail="You do not have access to this session.")
             for q in _mock_db["questions"]:
                 if q["session_id"] == session_id and q["question_number"] == question_number:
                     q["student_answer"] = student_answer
         else:
             try:
+                # Check ownership
+                session_res = supabase.table("teach_sessions").select("user_id").eq("id", session_id).execute()
+                if not session_res.data:
+                    raise HTTPException(status_code=404, detail="Session not found")
+                if session_res.data[0].get("user_id") != user_id:
+                    raise HTTPException(status_code=403, detail="You do not have access to this session.")
+                    
                 res = supabase.table("session_questions").update({
                     "student_answer": student_answer
                 }).eq("session_id", session_id).eq("question_number", question_number).execute()
@@ -151,10 +170,13 @@ class SessionService:
             
         return next_question, False
 
-    async def evaluate(self, session_id: str, ai_mode: str = None, confidence_before: int = None):
+    async def evaluate(self, session_id: str, user_id: str, ai_mode: str = None, confidence_before: int = None):
         history = ""
         if settings.use_mock_db:
-            subject = _mock_db["sessions"].get(session_id, {}).get("subject", "Unknown")
+            session = _mock_db["sessions"].get(session_id)
+            if session and session.get("user_id") != user_id:
+                raise HTTPException(status_code=403, detail="You do not have access to this session.")
+            subject = session.get("subject", "Unknown") if session else "Unknown"
             topic = _mock_db["sessions"].get(session_id, {}).get("topic", "Unknown")
             student_exp = _mock_db["sessions"].get(session_id, {}).get("student_explanation", "")
             user_id = _mock_db["sessions"].get(session_id, {}).get("user_id")
@@ -171,6 +193,8 @@ class SessionService:
                 if not session_res.data:
                     raise Exception("Session not found")
                 session = session_res.data[0]
+                if session.get("user_id") != user_id:
+                    raise HTTPException(status_code=403, detail="You do not have access to this session.")
                 subject = session["subject"]
                 topic = session["topic"]
                 student_exp = session["student_explanation"]

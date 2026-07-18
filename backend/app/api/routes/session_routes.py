@@ -1,25 +1,26 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.schemas.session_schema import SessionStartRequest, SessionStartResponse, ExplainRequest, ExplainResponse, AnswerRequest, AnswerResponse, EvaluateRequest
 from app.services.session_service import session_service
+from app.api.deps import get_current_user, CurrentUser
 
 router = APIRouter()
 
 @router.post("/start", response_model=SessionStartResponse)
-async def start_session(request: SessionStartRequest):
-    session_id = await session_service.start_session(request.user_id, request.subject, request.topic)
+async def start_session(request: SessionStartRequest, current_user: CurrentUser = Depends(get_current_user)):
+    session_id = await session_service.start_session(current_user.id, request.subject, request.topic)
     return SessionStartResponse(session_id=session_id, message="Session started successfully")
 
 @router.post("/explain", response_model=ExplainResponse)
-async def explain_topic(request: ExplainRequest):
+async def explain_topic(request: ExplainRequest, current_user: CurrentUser = Depends(get_current_user)):
     question = await session_service.explain(
-        request.session_id, request.subject, request.topic, request.student_explanation, request.ai_mode
+        request.session_id, request.subject, request.topic, request.student_explanation, current_user.id, request.ai_mode
     )
     return ExplainResponse(question=question, question_number=1)
 
 @router.post("/answer", response_model=AnswerResponse)
-async def answer_question(request: AnswerRequest):
+async def answer_question(request: AnswerRequest, current_user: CurrentUser = Depends(get_current_user)):
     next_question, is_final = await session_service.answer(
-        request.session_id, request.question, request.student_answer, request.question_number, request.ai_mode
+        request.session_id, request.question, request.student_answer, request.question_number, current_user.id, request.ai_mode
     )
     
     if is_final:
@@ -37,7 +38,7 @@ async def answer_question(request: AnswerRequest):
     )
 
 @router.post("/evaluate")
-async def evaluate_session(request: EvaluateRequest):
-    result = await session_service.evaluate(request.session_id, request.ai_mode, request.confidence_before)
-    # the frontend schema matches the dict result, so we return it directly, FastAPI handles Pydantic conversion
+async def evaluate_session(request: EvaluateRequest, current_user: CurrentUser = Depends(get_current_user)):
+    result = await session_service.evaluate(request.session_id, current_user.id, request.ai_mode, request.confidence_before)
     return result
+

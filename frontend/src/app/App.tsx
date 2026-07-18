@@ -1,9 +1,12 @@
 import React from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
+import { AuthProvider } from '../features/auth/useAuth';
 
 export const App: React.FC = () => {
   return (
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   );
 };
